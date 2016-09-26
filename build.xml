@@ -11,7 +11,7 @@
 		<mkdir dir="diary/build/classes"/>
 		<mkdir dir="dist" />
 	</target>
-	
+
 	<target name="compile" depends="init" >
 		<javac destdir="diary/build/classes" debug="true" srcdir="diary/src">
 			<classpath refid="compile.classpath"/>
