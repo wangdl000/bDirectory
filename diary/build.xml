@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="diary" default="total">
+
+	<tstamp>
+		<format property="build.latest.dir" pattern="yyyyMMddHHmmss"/>
+		<format property="build.latest.date" pattern="yyyy-MM-dd"/>
+		<format property="build.latest.time" pattern="HH:mm:ss"/>
+	</tstamp>
+
+	<property name="src.dir" location="src"/>
+	
+	<property name="web.dir" location="WebContent"/>
+	
+	<property name="webinf.dir" location="${web.dir}/WEB-INF"/>
+
+	<property name="lib.dir" location="${webinf.dir}/lib"/>
+	
+	<property name="build.dir" location="build/classes"/>
+
+	<!-- Output -->
+	<property name="build.output" location="output"/>
+
+	<property name="build.output.dir" location="${build.output}/diary"/>
+
+	<!-- JavaDoc -->
+	<property name="build.output.doc.dir" location="${build.output.dir}/docs"/>
+
+	<!-- Test -->
+	<property name="test.dir" location="test"/>
+
+	<property name="build.output.test.dir" location="${build.output.dir}/test"/>
+
+	<property name="build.output.test.data.dir" location="${build.output.test.dir}/data"/>
+
+	<!-- CheckStyle -->
+	<property name="build.output.checkstyle.dir" location="${build.output.dir}/checkstyle"/>
+
+    <property name="checkstyle.xml" location="${build.output.checkstyle.dir}/checkstyle_checks.xml"/> 
+	
+    <property name="checkstyle.xsl" location="${build.output.checkstyle.dir}/checkstyle-frames.xsl"/> 
+
+	<!-- Log -->
+	<property name="build.output.log" location="${build.output}/output.log"/>
+
+	<property name="build.output.log.verbose" location="${build.output}/output_verbose.log"/>
+
+	<property name="build.output.log.datetime" value="[${build.latest.date} ${build.latest.time}] "/>
+
+	<!-- Jar -->
+	<property file="${src.dir}/base.properties"/>
+
+	<property name="build.output.requires.dir" location="${build.output.dir}/requires"/>
+
+	<fileset id="compile.jar" dir="${lib.dir}">
+		<include name="commons-lang-2.4.jar"/>
+	</fileset>
+
+	<!-- 类路径 -->
+	<path id="compile.classpath">
+		<fileset refid="compile.jar"/>
+	</path>
+
+	<path id="test.classpath">
+		<path refid="compile.classpath"/>
+		<pathelement location="${lib.dir}/junit-4.10.jar"/>
+		<pathelement location="${build.dir}"/> 
+	</path>
+
+	<path id="checkstyle.classpath">
+		<pathelement location="${lib.dir}/checkstyle-5.6-all.jar"/>
+	</path>
+	
+	
+	<!-- 记录日志,日志保存到文件中 -->
+	<record name="${build.output.log}" append="no"/>
+
+	<record name="${build.output.log.verbose}" append="no" loglevel="verbose"/>
+
+	<target name="total" depends="zip,war" description="构建完成">
+		<echo>${build.output.log.datetime}构建完成！</echo>
+	</target>
+	
+	<target name="war" depends="createjar,javadoc" description="生成War">
+		<war destfile="${build.output.dir}/${project.name}-${project.version}.war" webxml="${webinf.dir}/web.xml" duplicate="fail">
+		  <fileset file="${web.dir}/*.jsp"/>
+		  <lib dir="${lib.dir}">
+		  	<include name="commons-lang-2.4.jar"/>
+		  </lib>
+		  <classes dir="${build.dir}">
+		  	<include name="diary/**/*"/>
+		  	<include name="${build.dir}/test.property"/>
+		  </classes>
+		</war>
+		<echo>${build.output.log.datetime}生成War完成！</echo>
+	</target>
+
+	<target name="zip" depends="createjar,javadoc" description="生成Zip">
+		<zip destfile="${build.output.dir}/${project.name}-core-${project.version}.zip" duplicate="preserve">
+			 <zipfileset dir="${build.output.dir}/docs" prefix="docs"/>
+			 <zipfileset dir="${build.output.dir}/requires" prefix="requires"/>
+			 <zipfileset file="${build.output.dir}/*.jar"/>
+		</zip>
+		<echo>${build.output.log.datetime}生成Zip完成！</echo>
+	</target>
+
+	<target name="createjar" depends="test" description="生成Jar">
+		<manifest file="${build.output.dir}/MANIFEST.MF" encoding="utf-8">
+			<attribute name="Built-By" value="${user.name}"/>
+			<section name="${project.name}">
+				<attribute name="Implementation-Title" value="${project.name}"/>
+				<attribute name="Implementation-Version" value="${project.version}"/>
+			</section>
+		</manifest>
+		<jar destfile="${build.output.dir}/${project.name}-core-${project.version}.jar" duplicate="preserve" compress="false" manifestencoding="utf-8" manifest="${build.output.dir}/MANIFEST.MF">
+			<fileset dir="${build.dir}">
+				<exclude name="test/**/*"/>
+				<exclude name="test"/>
+				<exclude name="checkstyle_checks.xml"/>
+				<exclude name="checkstyle-frames.xsl"/>
+				<exclude name="checkstyletask.properties"/>
+				<exclude name="sun_checks.xml"/>
+				<exclude name="checkstyle_checks.xml"/>
+				<exclude name="base.properties"/>
+			</fileset>
+		</jar>
+		<copy todir="${build.output.requires.dir}">
+			<fileset refid="compile.jar"/>
+		</copy>
+		<echo>${build.output.log.datetime}生成Jar完成！</echo>
+	</target>
+
+	<target name="javadoc" depends="test" description="生成JavaDoc">  
+        <javadoc  
+            sourcepath="${src.dir}"  
+            destdir="${build.output.doc.dir}"  
+            packagenames="diary.*"  
+            use="true"  
+            version="true"  
+            windowtitle="${project.name}"  
+            failonerror="true">  
+            <classpath refid="compile.classpath"/>  
+        </javadoc> 
+		<echo>${build.output.log.datetime}生成JavaDoc完成，详情可查看${build.output.doc.dir}/index.html！</echo>
+    </target>
+
+	<target name="test" depends="compilesrc,compiletest" description="批量测试，并生成html">  
+        <junit printsummary="false" haltonfailure="false" errorProperty="test.failed" failureProperty="test.failed">  
+            <classpath refid="test.classpath"/>  
+            <formatter type="brief" usefile="false"/>  
+            <formatter type="xml"/>  
+			<!-- 在testcase定义的情况下，单独测试testcase -->
+            <test name="${testcase}" todir="${build.output.test.data.dir}" if="testcase"/>  
+			<!-- 批量测试 -->
+            <batchtest todir="${build.output.test.data.dir}" unless="testcase">  
+                <fileset dir="${build.dir}">  
+                    <include name="**/*Test.class"/>  
+                </fileset>  
+            </batchtest>  
+        </junit>  
+        <junitreport todir="${build.output.test.data.dir}">  
+            <fileset dir="${build.output.test.data.dir}">  
+                <include name="TEST-*.xml"/>  
+            </fileset>  
+            <report format="frames" todir="${build.output.test.dir}"/>  
+        </junitreport>  
+        <fail if="test.failed">  
+            ${build.output.log.datetime}批量测试，并生成html失败，详细可查看${build.output.test.dir}/index.html  
+        </fail>  
+        <echo>${build.output.log.datetime}批量测试，并生成html完成，详细可查看${build.output.test.dir}/index.html！</echo>  
+    </target> 
+
+	<target name="compiletest" depends="copytest,compilesrc" description="编译测试代码文件">
+		<javac srcdir="${test.dir}" destdir="${build.dir}" includeAntRuntime="false" encoding="UTF-8">
+			<include name="**/*.java"/>
+			<classpath refid="test.classpath"/>
+		</javac>
+		<echo>${build.output.log.datetime}编译测试代码文件完成！</echo>
+	</target>
+
+	<target name="copytest" depends="init" description="复制测试代码资源文件到编译目录">
+		<fileset dir="${test.dir}">
+			<exclude name="**/*.java"/>
+		</fileset>
+		<echo>${build.output.log.datetime}复制测试代码资源文件到编译目录完成！</echo>
+	</target>
+
+	<target name="compilesrc" depends="checkstyle,copysrc" description="编译源代码文件">
+		<javac srcdir="${src.dir}" destdir="${build.dir}" includeAntRuntime="false" encoding="UTF-8">
+			<include name="**/*.java"/>
+			<classpath refid="compile.classpath"/>
+		</javac>
+		<echo>${build.output.log.datetime}编译源代码文件完成！</echo>
+	</target>
+
+	<target name="copysrc" depends="init" description="复制源代码资源文件到编译目录">
+		<copy todir="${build.dir}" includeemptydirs="false">
+			<fileset dir="${src.dir}">
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
+		<echo>${build.output.log.datetime}复制源代码资源文件到编译目录完成！</echo>
+	</target>
+
+	<target name="checkstyle" depends="init" description="用Checkstyle校验源代码">
+		<taskdef name="checkstyle"  classname="com.puppycrawl.tools.checkstyle.CheckStyleTask" classpathref="checkstyle.classpath"/> 
+        <checkstyle    
+            failOnViolation="false"      
+            failureProperty="checkstyle.failed"     
+            config="${src.dir}/sun_checks.xml">     
+            <fileset dir="${src.dir}" includes="**/*.java"/>      
+            <formatter type="plain"/>      
+            <formatter type="xml" toFile="${build.output.checkstyle.dir}/checkstyle_report.xml"/>      
+        </checkstyle>
+		<xslt style="${checkstyle.xsl}"      
+            in="${build.output.checkstyle.dir}/checkstyle_report.xml"      
+            out="${build.output.checkstyle.dir}/checkstyle_report.html">    
+        </xslt>
+		<echo>${build.output.log.datetime}用Checkstyle校验源代码完成，详细信息查看${build.output.checkstyle.dir}/checkstyle_report.html！</echo>
+    </target>
+
+	<target name="init" depends="clean,cleanoutput" description="创建输出目录">
+		<mkdir dir="${build.dir}"/>
+		<mkdir dir="${build.output.dir}"/>
+		<mkdir dir="${build.output.doc.dir}"/>
+		<mkdir dir="${build.output.test.dir}"/>
+		<mkdir dir="${build.output.test.data.dir}"/>
+		<mkdir dir="${build.output.checkstyle.dir}"/>
+		<copy todir="${build.output.checkstyle.dir}" overwrite="true">
+			<fileset dir="${src.dir}">
+				<include name="checkstyle-frames.xsl"/>
+				<include name="checkstyle_checks.xml"/>
+			</fileset>
+			<filterset>
+				<filter token="output.dir" value="${build.output.checkstyle.dir}"/>
+			</filterset>
+		</copy>
+		<echo>${build.output.log.datetime}输出目录创建完成！</echo>
+	</target>
+
+	<target name="clean" description="清理编译目录">
+		<delete includeemptydirs="true">
+			<fileset dir="${build.dir}">
+				<include name="**/*"/>
+			</fileset>
+		</delete>
+		<echo>${build.output.log.datetime}编译目录清理完成！</echo>
+	</target>
+
+	<target name="cleanoutput" description="清理输出目录">		
+		<delete includeemptydirs="true">
+			<fileset dir="${build.output}">
+				<exclude name="output*.log"/>
+			</fileset>
+		</delete>
+		<echo>${build.output.log.datetime}输出目录清理完成！</echo>
+	</target>
+	
+</project>
