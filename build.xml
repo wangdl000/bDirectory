@@ -6,7 +6,7 @@
 			<include name="*.jar"/>
 		</fileset>
 	</path>
-	
+
 	<target name="init">
 		<mkdir dir="diary/build/classes"/>
 		<mkdir dir="dist" />
