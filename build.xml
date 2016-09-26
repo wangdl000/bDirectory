@@ -1,258 +1,294 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project name="diary" default="total">
-
-	<tstamp>
-		<format property="build.latest.dir" pattern="yyyyMMddHHmmss"/>
-		<format property="build.latest.date" pattern="yyyy-MM-dd"/>
-		<format property="build.latest.time" pattern="HH:mm:ss"/>
-	</tstamp>
-
-	<property name="src.dir" location="src"/>
-	
-	<property name="web.dir" location="WebContent"/>
-	
-	<property name="webinf.dir" location="${web.dir}/WEB-INF"/>
-
-	<property name="lib.dir" location="${webinf.dir}/lib"/>
-	
-	<property name="build.dir" location="build/classes"/>
-
-	<!-- Output -->
-	<property name="build.output" location="output"/>
-
-	<property name="build.output.dir" location="${build.output}/diary"/>
-
-	<!-- JavaDoc -->
-	<property name="build.output.doc.dir" location="${build.output.dir}/docs"/>
-
-	<!-- Test -->
-	<property name="test.dir" location="test"/>
-
-	<property name="build.output.test.dir" location="${build.output.dir}/test"/>
-
-	<property name="build.output.test.data.dir" location="${build.output.test.dir}/data"/>
-
-	<!-- CheckStyle -->
-	<property name="build.output.checkstyle.dir" location="${build.output.dir}/checkstyle"/>
-
-    <property name="checkstyle.xml" location="${build.output.checkstyle.dir}/checkstyle_checks.xml"/> 
-	
-    <property name="checkstyle.xsl" location="${build.output.checkstyle.dir}/checkstyle-frames.xsl"/> 
-
-	<!-- Log -->
-	<property name="build.output.log" location="${build.output}/output.log"/>
-
-	<property name="build.output.log.verbose" location="${build.output}/output_verbose.log"/>
-
-	<property name="build.output.log.datetime" value="[${build.latest.date} ${build.latest.time}] "/>
-
-	<!-- Jar -->
-	<property file="${src.dir}/base.properties"/>
-
-	<property name="build.output.requires.dir" location="${build.output.dir}/requires"/>
-
-	<fileset id="compile.jar" dir="${lib.dir}">
-		<include name="commons-lang-2.4.jar"/>
-	</fileset>
-
-	<!-- ç±»è·¯å¾„ -->
-	<path id="compile.classpath">
-		<fileset refid="compile.jar"/>
-	</path>
-
-	<path id="test.classpath">
-		<path refid="compile.classpath"/>
-		<pathelement location="${lib.dir}/junit-4.10.jar"/>
-		<pathelement location="${build.dir}"/> 
-	</path>
-
-	<path id="checkstyle.classpath">
-		<pathelement location="${lib.dir}/checkstyle-5.6-all.jar"/>
-	</path>
-	
-	
-	<!-- è®°å½•æ—¥å¿—,æ—¥å¿—ä¿å­˜åˆ°æ–‡ä»¶ä¸­ -->
-	<record name="${build.output.log}" append="no"/>
-
-	<record name="${build.output.log.verbose}" append="no" loglevel="verbose"/>
-
-	<target name="total" depends="zip,war" description="æ„å»ºå®Œæˆ">
-		<echo>${build.output.log.datetime}æ„å»ºå®Œæˆï¼</echo>
-	</target>
-	
-	<target name="war" depends="createjar,javadoc" description="ç”ŸæˆWar">
-		<war destfile="${build.output.dir}/${project.name}-${project.version}.war" webxml="${webinf.dir}/web.xml" duplicate="fail">
-		  <fileset file="${web.dir}/*.jsp"/>
-		  <lib dir="${lib.dir}">
-		  	<include name="commons-lang-2.4.jar"/>
-		  </lib>
-		  <classes dir="${build.dir}">
-		  	<include name="diary/**/*"/>
-		  	<include name="${build.dir}/test.property"/>
-		  </classes>
-		</war>
-		<echo>${build.output.log.datetime}ç”ŸæˆWarå®Œæˆï¼</echo>
-	</target>
-
-	<target name="zip" depends="createjar,javadoc" description="ç”ŸæˆZip">
-		<zip destfile="${build.output.dir}/${project.name}-core-${project.version}.zip" duplicate="preserve">
-			 <zipfileset dir="${build.output.dir}/docs" prefix="docs"/>
-			 <zipfileset dir="${build.output.dir}/requires" prefix="requires"/>
-			 <zipfileset file="${build.output.dir}/*.jar"/>
-		</zip>
-		<echo>${build.output.log.datetime}ç”ŸæˆZipå®Œæˆï¼</echo>
-	</target>
-
-	<target name="createjar" depends="test" description="ç”ŸæˆJar">
-		<manifest file="${build.output.dir}/MANIFEST.MF" encoding="utf-8">
-			<attribute name="Built-By" value="${user.name}"/>
-			<section name="${project.name}">
-				<attribute name="Implementation-Title" value="${project.name}"/>
-				<attribute name="Implementation-Version" value="${project.version}"/>
-			</section>
-		</manifest>
-		<jar destfile="${build.output.dir}/${project.name}-core-${project.version}.jar" duplicate="preserve" compress="false" manifestencoding="utf-8" manifest="${build.output.dir}/MANIFEST.MF">
-			<fileset dir="${build.dir}">
-				<exclude name="test/**/*"/>
-				<exclude name="test"/>
-				<exclude name="checkstyle_checks.xml"/>
-				<exclude name="checkstyle-frames.xsl"/>
-				<exclude name="checkstyletask.properties"/>
-				<exclude name="sun_checks.xml"/>
-				<exclude name="checkstyle_checks.xml"/>
-				<exclude name="base.properties"/>
-			</fileset>
-		</jar>
-		<copy todir="${build.output.requires.dir}">
-			<fileset refid="compile.jar"/>
-		</copy>
-		<echo>${build.output.log.datetime}ç”ŸæˆJarå®Œæˆï¼</echo>
-	</target>
-
-	<target name="javadoc" depends="test" description="ç”ŸæˆJavaDoc">  
-        <javadoc  
-            sourcepath="${src.dir}"  
-            destdir="${build.output.doc.dir}"  
-            packagenames="diary.*"  
-            use="true"  
-            version="true"  
-            windowtitle="${project.name}"  
-            failonerror="true">  
-            <classpath refid="compile.classpath"/>  
-        </javadoc> 
-		<echo>${build.output.log.datetime}ç”ŸæˆJavaDocå®Œæˆï¼Œè¯¦æƒ…å¯æŸ¥çœ‹${build.output.doc.dir}/index.htmlï¼</echo>
-    </target>
-
-	<target name="test" depends="compilesrc,compiletest" description="æ‰¹é‡æµ‹è¯•ï¼Œå¹¶ç”Ÿæˆhtml">  
-        <junit printsummary="false" haltonfailure="false" errorProperty="test.failed" failureProperty="test.failed">  
-            <classpath refid="test.classpath"/>  
-            <formatter type="brief" usefile="false"/>  
-            <formatter type="xml"/>  
-			<!-- åœ¨testcaseå®šä¹‰çš„æƒ…å†µä¸‹ï¼Œå•ç‹¬æµ‹è¯•testcase -->
-            <test name="${testcase}" todir="${build.output.test.data.dir}" if="testcase"/>  
-			<!-- æ‰¹é‡æµ‹è¯• -->
-            <batchtest todir="${build.output.test.data.dir}" unless="testcase">  
-                <fileset dir="${build.dir}">  
-                    <include name="**/*Test.class"/>  
-                </fileset>  
-            </batchtest>  
-        </junit>  
-        <junitreport todir="${build.output.test.data.dir}">  
-            <fileset dir="${build.output.test.data.dir}">  
-                <include name="TEST-*.xml"/>  
+<?xml version="1.0" encoding="UTF-8"?>  
+<project name="diary" default="total">  
+  
+    <tstamp>  
+        <format property="build.latest.dir" pattern="yyyyMMddHHmmss"/>  
+        <format property="build.latest.date" pattern="yyyy-MM-dd"/>  
+        <format property="build.latest.time" pattern="HH:mm:ss"/>  
+    </tstamp>  
+  
+    <property name="src.dir" location="src"/>  
+      
+    <property name="web.dir" location="WebContent"/>  
+      
+    <property name="webinf.dir" location="${web.dir}/WEB-INF"/>  
+  
+    <property name="lib.dir" location="${webinf.dir}/lib"/>  
+      
+    <property name="build.dir" location="build/classes"/>  
+  
+    <!-- Output -->  
+    <property name="build.output" location="output"/>  
+  
+    <property name="build.output.dir" location="${build.output}/diary"/>  
+  
+    <!-- JavaDoc -->  
+    <property name="build.output.doc.dir" location="${build.output.dir}/docs"/>  
+  
+    <!-- Test -->  
+    <property name="test.dir" location="test"/>  
+  
+    <property name="build.output.test.dir" location="${build.output.dir}/test"/>  
+  
+    <property name="build.output.test.data.dir" location="${build.output.test.dir}/data"/>  
+  
+    <!-- CheckStyle -->  
+    <property name="build.output.checkstyle.dir" location="${build.output.dir}/checkstyle"/>  
+  
+    <property name="checkstyle.xml" location="${build.output.checkstyle.dir}/checkstyle_checks.xml"/>   
+      
+    <property name="checkstyle.xsl" location="${build.output.checkstyle.dir}/checkstyle-frames.xsl"/>   
+  
+    <!-- Log -->  
+    <property name="build.output.log" location="${build.output}/output.log"/>  
+  
+    <property name="build.output.log.verbose" location="${build.output}/output_verbose.log"/>  
+  
+    <property name="build.output.log.datetime" value="[${build.latest.date} ${build.latest.time}] "/>  
+  
+    <!-- Jar -->  
+    <property file="${src.dir}/base.properties"/>  
+  
+    <property name="build.output.requires.dir" location="${build.output.dir}/requires"/>  
+      
+    <!-- deploy -->  
+    <property name="url.server" value="localhost"/>  
+      
+    <property name="url.port" value="8080"/>  
+      
+    <property name="server.address" value="D:/dev/tomcat/tomcat6035test/webapps"/>  
+      
+    <property name="application.url" value="http://${url.server}:${url.port}/${project.name}-${project.version}"/>  
+      
+      
+  
+    <fileset id="compile.jar" dir="${lib.dir}">  
+        <include name="commons-lang-2.4.jar"/>  
+    </fileset>  
+  
+    <!-- ?˜HŒa -->  
+    <path id="compile.classpath">  
+        <fileset refid="compile.jar"/>  
+    </path>  
+  
+    <path id="test.classpath">  
+        <path refid="compile.classpath"/>  
+        <pathelement location="${lib.dir}/junit-4.10.jar"/>  
+        <pathelement location="${build.dir}"/>   
+    </path>  
+  
+    <path id="checkstyle.classpath">  
+        <pathelement location="${lib.dir}/checkstyle-5.6-all.jar"/>  
+    </path>  
+      
+      
+    <!-- ??“úu,“úu•Û‘¶“•¶Œ’† -->  
+    <record name="${build.output.log}" append="no"/>  
+  
+    <record name="${build.output.log.verbose}" append="no" loglevel="verbose"/>  
+  
+    <target name="total" depends="zip,check-deploy" description="?ŒšŠ®¬">  
+        <echo>${build.output.log.datetime}?ŒšŠ®¬I</echo>  
+    </target>  
+      
+    <target name="check-deploy" depends="deploy" description="??•”">  
+        <waitfor maxwait="30" maxwaitunit="second" timeoutproperty="server.missing">  
+            <http url="${application.url}"/>  
+        </waitfor>  
+        <echo>${build.output.log.datetime}??•?•”${application.url}</echo>  
+        <fail if="server.missing">${build.output.log.datetime}•?•”¸?C–¢Q“w’è•?${application.url}</fail>  
+    </target>  
+      
+    <target name="deploy" depends="war" description="•”">  
+        <copy file="${build.output.dir}/${project.name}-${project.version}.war"  
+            todir="${server.address}"  
+            overwrite="true"/>  
+        <echo>${build.output.log.datetime}•”Š®¬I</echo>  
+    </target>  
+      
+    <target name="undeploy" description="‰ğœ•”">  
+        <delete>  
+            <fileset dir="${server.address}">  
+                <include name="diary*.war"/>  
+                <include name="diary*/**/*"/>  
             </fileset>  
-            <report format="frames" todir="${build.output.test.dir}"/>  
-        </junitreport>  
-        <fail if="test.failed">  
-            ${build.output.log.datetime}æ‰¹é‡æµ‹è¯•ï¼Œå¹¶ç”Ÿæˆhtmlå¤±è´¥ï¼Œè¯¦ç»†å¯æŸ¥çœ‹${build.output.test.dir}/index.html  
-        </fail>  
-        <echo>${build.output.log.datetime}æ‰¹é‡æµ‹è¯•ï¼Œå¹¶ç”Ÿæˆhtmlå®Œæˆï¼Œè¯¦ç»†å¯æŸ¥çœ‹${build.output.test.dir}/index.htmlï¼</echo>  
-    </target> 
-
-	<target name="compiletest" depends="copytest,compilesrc" description="ç¼–è¯‘æµ‹è¯•ä»£ç æ–‡ä»¶">
-		<javac srcdir="${test.dir}" destdir="${build.dir}" includeAntRuntime="false" encoding="UTF-8">
-			<include name="**/*.java"/>
-			<classpath refid="test.classpath"/>
-		</javac>
-		<echo>${build.output.log.datetime}ç¼–è¯‘æµ‹è¯•ä»£ç æ–‡ä»¶å®Œæˆï¼</echo>
-	</target>
-
-	<target name="copytest" depends="init" description="å¤åˆ¶æµ‹è¯•ä»£ç èµ„æºæ–‡ä»¶åˆ°ç¼–è¯‘ç›®å½•">
-		<fileset dir="${test.dir}">
-			<exclude name="**/*.java"/>
-		</fileset>
-		<echo>${build.output.log.datetime}å¤åˆ¶æµ‹è¯•ä»£ç èµ„æºæ–‡ä»¶åˆ°ç¼–è¯‘ç›®å½•å®Œæˆï¼</echo>
-	</target>
-
-	<target name="compilesrc" depends="checkstyle,copysrc" description="ç¼–è¯‘æºä»£ç æ–‡ä»¶">
-		<javac srcdir="${src.dir}" destdir="${build.dir}" includeAntRuntime="false" encoding="UTF-8">
-			<include name="**/*.java"/>
-			<classpath refid="compile.classpath"/>
-		</javac>
-		<echo>${build.output.log.datetime}ç¼–è¯‘æºä»£ç æ–‡ä»¶å®Œæˆï¼</echo>
-	</target>
-
-	<target name="copysrc" depends="init" description="å¤åˆ¶æºä»£ç èµ„æºæ–‡ä»¶åˆ°ç¼–è¯‘ç›®å½•">
-		<copy todir="${build.dir}" includeemptydirs="false">
-			<fileset dir="${src.dir}">
-				<exclude name="**/*.java"/>
-			</fileset>
-		</copy>
-		<echo>${build.output.log.datetime}å¤åˆ¶æºä»£ç èµ„æºæ–‡ä»¶åˆ°ç¼–è¯‘ç›®å½•å®Œæˆï¼</echo>
-	</target>
-
-	<target name="checkstyle" depends="init" description="ç”¨Checkstyleæ ¡éªŒæºä»£ç ">
-		<taskdef name="checkstyle"  classname="com.puppycrawl.tools.checkstyle.CheckStyleTask" classpathref="checkstyle.classpath"/> 
-        <checkstyle    
-            failOnViolation="false"      
-            failureProperty="checkstyle.failed"     
-            config="${src.dir}/sun_checks.xml">     
-            <fileset dir="${src.dir}" includes="**/*.java"/>      
-            <formatter type="plain"/>      
-            <formatter type="xml" toFile="${build.output.checkstyle.dir}/checkstyle_report.xml"/>      
-        </checkstyle>
-		<xslt style="${checkstyle.xsl}"      
-            in="${build.output.checkstyle.dir}/checkstyle_report.xml"      
-            out="${build.output.checkstyle.dir}/checkstyle_report.html">    
-        </xslt>
-		<echo>${build.output.log.datetime}ç”¨Checkstyleæ ¡éªŒæºä»£ç å®Œæˆï¼Œè¯¦ç»†ä¿¡æ¯æŸ¥çœ‹${build.output.checkstyle.dir}/checkstyle_report.htmlï¼</echo>
-    </target>
-
-	<target name="init" depends="clean,cleanoutput" description="åˆ›å»ºè¾“å‡ºç›®å½•">
-		<mkdir dir="${build.dir}"/>
-		<mkdir dir="${build.output.dir}"/>
-		<mkdir dir="${build.output.doc.dir}"/>
-		<mkdir dir="${build.output.test.dir}"/>
-		<mkdir dir="${build.output.test.data.dir}"/>
-		<mkdir dir="${build.output.checkstyle.dir}"/>
-		<copy todir="${build.output.checkstyle.dir}" overwrite="true">
-			<fileset dir="${src.dir}">
-				<include name="checkstyle-frames.xsl"/>
-				<include name="checkstyle_checks.xml"/>
-			</fileset>
-			<filterset>
-				<filter token="output.dir" value="${build.output.checkstyle.dir}"/>
-			</filterset>
-		</copy>
-		<echo>${build.output.log.datetime}è¾“å‡ºç›®å½•åˆ›å»ºå®Œæˆï¼</echo>
-	</target>
-
-	<target name="clean" description="æ¸…ç†ç¼–è¯‘ç›®å½•">
-		<delete includeemptydirs="true">
-			<fileset dir="${build.dir}">
-				<include name="**/*"/>
-			</fileset>
-		</delete>
-		<echo>${build.output.log.datetime}ç¼–è¯‘ç›®å½•æ¸…ç†å®Œæˆï¼</echo>
-	</target>
-
-	<target name="cleanoutput" description="æ¸…ç†è¾“å‡ºç›®å½•">		
-		<delete includeemptydirs="true">
-			<fileset dir="${build.output}">
-				<exclude name="output*.log"/>
-			</fileset>
-		</delete>
-		<echo>${build.output.log.datetime}è¾“å‡ºç›®å½•æ¸…ç†å®Œæˆï¼</echo>
-	</target>
-	
-</project>
+        </delete>  
+        <echo>${build.output.log.datetime}‰ğœ•”Š®¬I</echo>  
+    </target>  
+      
+    <target name="war" depends="createjar,javadoc" description="¶¬War">  
+        <war destfile="${build.output.dir}/${project.name}-${project.version}.war" webxml="${webinf.dir}/web.xml" duplicate="fail">  
+          <fileset file="${web.dir}/*.jsp"/>  
+          <lib dir="${lib.dir}">  
+            <include name="commons-lang-2.4.jar"/>  
+          </lib>  
+          <classes dir="${build.dir}">  
+            <include name="diary/**/*"/>  
+            <include name="${build.dir}/test.property"/>  
+          </classes>  
+        </war>  
+        <echo>${build.output.log.datetime}¶¬WarŠ®¬I</echo>  
+    </target>  
+  
+    <target name="zip" depends="createjar,javadoc" description="¶¬Zip">  
+        <zip destfile="${build.output.dir}/${project.name}-core-${project.version}.zip" duplicate="preserve">  
+             <zipfileset dir="${build.output.dir}/docs" prefix="docs"/>  
+             <zipfileset dir="${build.output.dir}/requires" prefix="requires"/>  
+             <zipfileset file="${build.output.dir}/*.jar"/>  
+        </zip>  
+        <echo>${build.output.log.datetime}¶¬ZipŠ®¬I</echo>  
+    </target>  
+  
+    <target name="createjar" depends="test" description="¶¬Jar">  
+        <manifest file="${build.output.dir}/MANIFEST.MF" encoding="utf-8">  
+            <attribute name="Built-By" value="${user.name}"/>  
+            <section name="${project.name}">  
+                <attribute name="Implementation-Title" value="${project.name}"/>  
+                <attribute name="Implementation-Version" value="${project.version}"/>  
+            </section>  
+        </manifest>  
+        <jar destfile="${build.output.dir}/${project.name}-core-${project.version}.jar" duplicate="preserve" compress="false" manifestencoding="utf-8" manifest="${build.output.dir}/MANIFEST.MF">  
+            <fileset dir="${build.dir}">  
+                <exclude name="test/**/*"/>  
+                <exclude name="test"/>  
+                <exclude name="checkstyle_checks.xml"/>  
+                <exclude name="checkstyle-frames.xsl"/>  
+                <exclude name="checkstyletask.properties"/>  
+                <exclude name="sun_checks.xml"/>  
+                <exclude name="checkstyle_checks.xml"/>  
+                <exclude name="base.properties"/>  
+            </fileset>  
+        </jar>  
+        <copy todir="${build.output.requires.dir}">  
+            <fileset refid="compile.jar"/>  
+        </copy>  
+        <echo>${build.output.log.datetime}¶¬JarŠ®¬I</echo>  
+    </target>  
+  
+    <target name="javadoc" depends="test" description="¶¬JavaDoc">    
+        <javadoc    
+            sourcepath="${src.dir}"    
+            destdir="${build.output.doc.dir}"    
+            packagenames="diary.*"    
+            use="true"    
+            version="true"    
+            windowtitle="${project.name}"    
+            failonerror="true">    
+            <classpath refid="compile.classpath"/>    
+        </javadoc>   
+        <echo>${build.output.log.datetime}¶¬JavaDocŠ®¬C?î‰Â?ŠÅ${build.output.doc.dir}/index.htmlI</echo>  
+    </target>  
+  
+    <target name="test" depends="compilesrc,compiletest" description="”á—Ê??C›ó¶¬html">    
+        <junit printsummary="false" haltonfailure="false" errorProperty="test.failed" failureProperty="test.failed">    
+            <classpath refid="test.classpath"/>    
+            <formatter type="brief" usefile="false"/>    
+            <formatter type="xml"/>    
+            <!-- İtestcase’è?“Iî™v‰ºC?“Æ??testcase -->  
+            <test name="${testcase}" todir="${build.output.test.data.dir}" if="testcase"/>    
+            <!-- ”á—Ê?? -->  
+            <batchtest todir="${build.output.test.data.dir}" unless="testcase">    
+                <fileset dir="${build.dir}">    
+                    <include name="**/*Test.class"/>    
+                </fileset>    
+            </batchtest>    
+        </junit>    
+        <junitreport todir="${build.output.test.data.dir}">    
+            <fileset dir="${build.output.test.data.dir}">    
+                <include name="TEST-*.xml"/>    
+            </fileset>    
+            <report format="frames" todir="${build.output.test.dir}"/>    
+        </junitreport>    
+        <fail if="test.failed">    
+            ${build.output.log.datetime}”á—Ê??C›ó¶¬html¸?C??‰Â?ŠÅ${build.output.test.dir}/index.html    
+        </fail>    
+        <echo>${build.output.log.datetime}”á—Ê??C›ó¶¬htmlŠ®¬C??‰Â?ŠÅ${build.output.test.dir}/index.htmlI</echo>    
+    </target>   
+  
+    <target name="compiletest" depends="copytest,compilesrc" description="????‘ã?•¶Œ">  
+        <javac srcdir="${test.dir}" destdir="${build.dir}" includeAntRuntime="false" encoding="UTF-8">  
+            <include name="**/*.java"/>  
+            <classpath refid="test.classpath"/>  
+        </javac>  
+        <echo>${build.output.log.datetime}????‘ã?•¶ŒŠ®¬I</echo>  
+    </target>  
+  
+    <target name="copytest" depends="init" description="?§??‘ã??Œ¹•¶Œ“??–Ú?">  
+        <fileset dir="${test.dir}">  
+            <exclude name="**/*.java"/>  
+        </fileset>  
+        <echo>${build.output.log.datetime}?§??‘ã??Œ¹•¶Œ“??–Ú?Š®¬I</echo>  
+    </target>  
+  
+    <target name="compilesrc" depends="checkstyle,copysrc" description="??Œ¹‘ã?•¶Œ">  
+        <javac srcdir="${src.dir}" destdir="${build.dir}" includeAntRuntime="false" encoding="UTF-8">  
+            <include name="**/*.java"/>  
+            <classpath refid="compile.classpath"/>  
+        </javac>  
+        <echo>${build.output.log.datetime}??Œ¹‘ã?•¶ŒŠ®¬I</echo>  
+    </target>  
+  
+    <target name="copysrc" depends="init" description="?§Œ¹‘ã??Œ¹•¶Œ“??–Ú?">  
+        <copy todir="${build.dir}" includeemptydirs="false">  
+            <fileset dir="${src.dir}">  
+                <exclude name="**/*.java"/>  
+            </fileset>  
+        </copy>  
+        <echo>${build.output.log.datetime}?§Œ¹‘ã??Œ¹•¶Œ“??–Ú?Š®¬I</echo>  
+    </target>  
+  
+    <target name="checkstyle" depends="init" description="—pCheckstyleZ?Œ¹‘ã?">  
+        <taskdef name="checkstyle"  classname="com.puppycrawl.tools.checkstyle.CheckStyleTask" classpathref="checkstyle.classpath"/>   
+        <checkstyle      
+            failOnViolation="false"        
+            failureProperty="checkstyle.failed"       
+            config="${src.dir}/sun_checks.xml">       
+            <fileset dir="${src.dir}" includes="**/*.java"/>        
+            <formatter type="plain"/>        
+            <formatter type="xml" toFile="${build.output.checkstyle.dir}/checkstyle_report.xml"/>        
+        </checkstyle>  
+        <xslt style="${checkstyle.xsl}"        
+            in="${build.output.checkstyle.dir}/checkstyle_report.xml"        
+            out="${build.output.checkstyle.dir}/checkstyle_report.html">      
+        </xslt>  
+        <echo>${build.output.log.datetime}—pCheckstyleZ?Œ¹‘ã?Š®¬C??M‘§?ŠÅ${build.output.checkstyle.dir}/checkstyle_report.htmlI</echo>  
+    </target>  
+  
+    <target name="init" depends="clean,cleanoutput" description="?Œš?o–Ú?">  
+        <mkdir dir="${build.dir}"/>  
+        <mkdir dir="${build.output.dir}"/>  
+        <mkdir dir="${build.output.doc.dir}"/>  
+        <mkdir dir="${build.output.test.dir}"/>  
+        <mkdir dir="${build.output.test.data.dir}"/>  
+        <mkdir dir="${build.output.checkstyle.dir}"/>  
+        <copy todir="${build.output.checkstyle.dir}" overwrite="true">  
+            <fileset dir="${src.dir}">  
+                <include name="checkstyle-frames.xsl"/>  
+                <include name="checkstyle_checks.xml"/>  
+            </fileset>  
+            <filterset>  
+                <filter token="output.dir" value="${build.output.checkstyle.dir}"/>  
+            </filterset>  
+        </copy>  
+        <echo>${build.output.log.datetime}?o–Ú??ŒšŠ®¬I</echo>  
+    </target>  
+  
+    <target name="clean" description="´—??–Ú?">  
+        <delete includeemptydirs="true">  
+            <fileset dir="${build.dir}">  
+                <include name="**/*"/>  
+            </fileset>  
+        </delete>  
+        <echo>${build.output.log.datetime}??–Ú?´—Š®¬I</echo>  
+    </target>  
+  
+    <target name="cleanoutput" description="´—?o–Ú?">        
+        <delete includeemptydirs="true">  
+            <fileset dir="${build.output}">  
+                <exclude name="output*.log"/>  
+            </fileset>  
+        </delete>  
+        <echo>${build.output.log.datetime}?o–Ú?´—Š®¬I</echo>  
+    </target>  
+      
+</project> 
