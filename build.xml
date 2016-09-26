@@ -66,7 +66,7 @@
         <include name="commons-lang-2.4.jar"/>  
     </fileset>  
   
-    <!-- ?˜HŒa -->  
+    <!-- path -->  
     <path id="compile.classpath">  
         <fileset refid="compile.jar"/>  
     </path>  
@@ -82,13 +82,13 @@
     </path>  
       
       
-    <!-- ??“úu,“úu•Û‘¶“•¶Œ’† -->  
+    <!-- log -->  
     <record name="${build.output.log}" append="no"/>  
   
     <record name="${build.output.log.verbose}" append="no" loglevel="verbose"/>  
   
-    <target name="total" depends="zip,check-deploy" description="?ŒšŠ®¬">  
-        <echo>${build.output.log.datetime}?ŒšŠ®¬I</echo>  
+    <target name="total" depends="zip,check-deploy" description="deploy sucessfull!">  
+        <echo>${build.output.log.datetime}deploy sucessfull</echo>  
     </target>  
       
     <target name="check-deploy" depends="deploy" description="??•”">  
