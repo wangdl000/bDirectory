@@ -7,7 +7,7 @@
 <title>Success Page</title>
 </head>
 <body>
-User Details 09/26 test::::: 15:51
+User Details 09/26 test::::: 16:05
 <hr>
 User Name   : ${user.name} <br/>
 Gender      : ${user.gender} <br/>
