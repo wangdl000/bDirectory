@@ -17,7 +17,7 @@
 			<classpath refid="compile.classpath"/>
 		</javac>
 	</target>
-	
+
 	<target name="war" depends="compile">
 		<war destfile="dist/cxm.war" webxml="diary/WebContent/WEB-INF/web.xml">
 			<fileset dir="diary/WebContent"/>
