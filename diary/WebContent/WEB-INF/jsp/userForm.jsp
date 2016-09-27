@@ -12,7 +12,7 @@
 <form:form method="POST" commandName="user">
 	<table>
            <tr >
-			<td colspan="2">User Details 09/27 test::::: 10:24</td>
+			<td colspan="2">User Details 09/27 test::::: 10:32</td>
 
 		</tr>
 		<tr>
