@@ -1,0 +1,46 @@
+<?xml version="1.0" ?>
+<project name="cxm" default="war">
+
+	<path id="compile.classpath">
+		<fileset dir="diary/WebContent/WEB-INF/lib">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<target name="init">
+		<property name='app.name' value='${ant.project.name}' />
+		<mkdir dir="dist" />
+		<mkdir dir="diary/build/classes" />
+		<property name='src.dir' location='diary/src' />
+		<property name='build.dir' location='diary/build' />
+		<property name='lib.dir' location='diary/WebContent/WEB-INF/lib' />
+		<property name='classes.dir' location='${build.dir}/classes' />
+		<property name='dist.dir' location='dist' />
+
+	</target>
+
+	<target name='initdirs' depends='init'>
+		<mkdir dir='${classes.dir}' />
+		<mkdir dir='${dist.dir}' />
+	</target>
+
+	<target name="compile" depends="init">
+		<javac destdir="${classes.dir}" debug="true" srcdir="${src.dir}">
+			<classpath refid="compile.classpath" />
+		</javac>
+	</target>
+
+	<target name="war" depends="compile">
+		<war destfile="${dist.dir}/${app.name}.war" webxml="diary/WebContent/WEB-INF/web.xml">
+			<fileset dir="diary/WebContent" />
+			<lib dir="${lib.dir}" />
+			<classes dir="${classes.dir}" />
+		</war>
+	</target>
+
+	<target name="clean">
+		<delete dir="dist" />
+		<delete dir="${build.dir}" />
+	</target>
+
+</project>
