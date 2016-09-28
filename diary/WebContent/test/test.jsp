@@ -1,3 +1,3 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<p><b>GitHub test用コメント(09/27 13:30)</b></p>
+<p><b>GitHub test用コメント(09/27 14:30)</b></p>
 <br>
