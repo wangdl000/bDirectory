@@ -29,7 +29,6 @@ public class loginJunit {
     @Test
     public void loginJunit() {
         wd.get("http://localhost:8088/cxm/userRegistration.htm");
-
 //        wd.findElement(By.id("name")).click();
 //        wd.findElement(By.id("name")).sendKeys("test");
 //        wd.findElement(By.id("password")).click();
