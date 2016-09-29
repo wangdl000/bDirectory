@@ -43,7 +43,7 @@ public class loginJunit {
 //        if (!wd.findElement(By.id("mailingList1")).isSelected()) {
 //            wd.findElement(By.id("mailingList1")).click();
 //        }
-//        wd.findElement(By.xpath("//form[@id='user']/table/tbody/tr[9]/td/input")).click();
+        wd.findElement(By.xpath("//form[@id='user']/table/tbody/tr[9]/td/input")).click();
     }
 
     @After
